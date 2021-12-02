@@ -3,8 +3,8 @@
 Official project website for the AAAI 2022 paper "Stereo Neural Vernier Caliper". This repository is under-preparation and the initial release is expected before the conference starts.
 
 <p align="center">
-  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/teaser.png" height="225"/>
-  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/diagram.png" height="225"/>
+  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/teaser.png" height="210"/>
+  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/diagram.png" height="210"/>
 </p>
 
 TLDR: SNVC is a multi-resolutional voxel-based stereo 3D object detection approach. It features instance-level modeling and high-resolution local scene representation learning. It studies the local update problem in the stereo perception scenario, enabling model-agnostic refinement and tracking-by-detection.
