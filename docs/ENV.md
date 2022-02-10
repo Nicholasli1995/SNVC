@@ -31,3 +31,13 @@ conda install spyder
 ## Compile and install
 You need to compile and install the following modules:
 Updating
+
+## Compile the KITTI evaluator (optional)
+If you need to quantitatively evaluate the model predictions for KITTI, you need to compile this evaluation tool.
+```bash
+cd ${SNVC_DIR}/tools/kitti-eval 
+```
+Compile the source code
+```bash
+g++ -o evaluate_object_3d_offline evaluate_object_3d_offline.cpp -O3
+```
