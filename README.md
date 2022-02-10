@@ -2,7 +2,7 @@
 
 Official project website for the AAAI 2022 paper "Stereo Neural Vernier Caliper". 
 
-Note: this repository is still under-preparation and the initial release is expected before the conference starts.
+This repository is under preparation and the initial release will be after the main conference.
 
 <p align="center">
   <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/teaser.png" height="210"/>
