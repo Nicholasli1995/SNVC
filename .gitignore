@@ -1,0 +1,15 @@
+#/*
+**/__pycache__
+.spyproject/
+*.log
+*.ini
+*.bak
+*.pth
+*.csv
+*.jpg
+*.png
+*.pdf
+/tools/kitti-eval/evaluate_object_3d_offline
+/data
+/outputs
+

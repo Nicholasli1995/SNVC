@@ -37,10 +37,17 @@ Refer to TRAIN.md to train the models by yourself.
 Refer to INFERENCE.md to use pre-trained weights and re-produce the quantitative results.
 
 ## TraceBox: a simple 3D bounding box visualization tool
-This is a self-contained and simple python script for drawing a set of 3D cuboids. It considers occlusion and uses simple ray tracing to obtain the visiblity of cuboid vertices (note the dashed lines). You can easily use this script in 3D object detection and 6DoF pose estimation projects.
+This is a simple self-contained python script for visualizing a set of 3D cuboids. It considers occlusion and uses simple ray tracing to obtain the visiblity of cuboid vertices (note the dashed lines). You can easily use this script in 3D object detection and 6DoF pose estimation projects.
 <p align="center">
   <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/visualization.png" height="200"/>
 </p>
+
+The following commands visualize N images in the prediction directory ${PRED_DIR} given KITTI root directory ${KITTI_DIR} and save them at ${save_DIR}. Check examples here.
+
+```bash
+cd tools
+python visualize.py --pred_dir ${PRED_DIR} --data_dir ${KITTI_DIR} --save_dir ${save_DIR} --num_show N
+```
 
 ## License
 This repository can be used for non-commercial purposes only. Contact me (nicholas.li@connect.ust.hk) if you are interested in a commercial license. Third-party datasets like KITTI are subject to their own licenses and the user should obey them strictly.
