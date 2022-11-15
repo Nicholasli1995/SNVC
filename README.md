@@ -42,11 +42,11 @@ This is a simple self-contained python script for visualizing a set of 3D cuboid
   <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/visualization.png" height="200"/>
 </p>
 
-The following commands visualize N images in the prediction directory ${PRED_DIR} given KITTI root directory ${KITTI_DIR} and save them at ${save_DIR}. Check examples here.
+The following commands visualize N images in the prediction directory PRED_DIR given KITTI root directory KITTI_DIR and save them at SAVE_DIR. Check examples here.
 
 ```bash
 cd tools
-python visualize.py --pred_dir ${PRED_DIR} --data_dir ${KITTI_DIR} --save_dir ${save_DIR} --num_show N
+python visualize.py --pred_dir PRED_DIR --data_dir KITTI_DIR --save_dir SAVE_DIR --num_show N
 ```
 
 ## License
