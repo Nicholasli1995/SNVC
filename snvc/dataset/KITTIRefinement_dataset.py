@@ -9,22 +9,22 @@ import os
 
 import numpy as np
 import cv2
-import zarr
+# import zarr
 import torch
-import torch.nn.functional as F
+# import torch.nn.functional as F
 import torch.utils.data as data
 import torchvision.transforms as transforms
 
 from PIL import Image
 
 import snvc.visualization.points as vp
-import snvc.dataloader.kitti_util as kitti_utils
+import snvc.dataset.kitti_util as kitti_utils
 
-from . import preprocess
+# from . import preprocess
 from snvc.utils.numpy_utils import clip_boxes
 # from snvc.utils.numba_utils import *
-from snvc.dataloader.kitti_dataset import kitti_dataset
-from snvc.dataloader.KITTILoader3D import get_kitti_annos
+from snvc.dataset.kitti_dataset import kitti_dataset
+from snvc.dataset.KITTILoader3D import get_kitti_annos
 from snvc.utils.bounding_box import construct_mesh_cuboid
 from snvc.utils.img_proc import get_affine_transform, kpts2cs, affine_transform
 
@@ -42,8 +42,8 @@ def default_loader(path):
 def disparity_loader(path):
     return np.load(path).astype(np.float32)
 
-def mask_loader(path):
-    return torch.from_numpy(zarr.load(path) != 0)
+# def mask_loader(path):
+#     return torch.from_numpy(zarr.load(path) != 0)
 
 def convert_to_viewpoint_torch(alpha, z, x):
     return alpha + torch.atan2(z, x) - np.pi / 2
@@ -63,7 +63,7 @@ class refinementDataset(data.Dataset):
                  training, 
                  loader=default_loader, 
                  dploader=disparity_loader,
-                 mloader=mask_loader,
+                 # mloader=mask_loader,
                  split=None, 
                  cfg=None, 
                  generate_target=False
@@ -74,7 +74,7 @@ class refinementDataset(data.Dataset):
         self.disp_L = left_disparity
         self.loader = loader
         self.dploader = dploader
-        self.mloader = mloader
+        # self.mloader = mloader
         self.training = training
         self.cfg = cfg
         # initialize relevant parameters

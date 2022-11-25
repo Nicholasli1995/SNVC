@@ -1,7 +1,7 @@
 import os
 import os.path as osp
-from snvc.dataloader.kitti_object import *
-from snvc.dataloader.kitti_util import *
+from snvc.dataset.kitti_object import *
+from snvc.dataset.kitti_util import *
 import pickle
 from itertools import cycle
 import sys

@@ -127,3 +127,36 @@ def convert_to_viewpoint_torch(ry, z, x):
 
 def convert_to_ry_torch(alpha, z, x):
     return alpha - torch.atan2(z, x) + np.pi / 2
+
+def box2corners_th(box: torch.Tensor) -> torch.Tensor:
+    """
+    Transform from bounding box representation to vertex coordinates using 
+    pytorch functions.
+
+    Args:
+        box (torch.Tensor): (B, N, 5) with x, y, w, h, alpha
+
+    Returns:
+        torch.Tensor: (B, N, 4, 2) corners
+    """
+    B = box.size()[0]
+    x = box[..., 0:1]
+    y = box[..., 1:2]
+    w = box[..., 2:3]
+    h = box[..., 3:4]
+    alpha = box[..., 4:5] # (B, N, 1)
+    x4 = torch.FloatTensor([0.5, -0.5, -0.5, 0.5]).unsqueeze(0).unsqueeze(0).to(box.device) # (1,1,4)
+    x4 = x4 * w     # (B, N, 4)
+    y4 = torch.FloatTensor([0.5, 0.5, -0.5, -0.5]).unsqueeze(0).unsqueeze(0).to(box.device)
+    y4 = y4 * h     # (B, N, 4)
+    corners = torch.stack([x4, y4], dim=-1)     # (B, N, 4, 2)
+    sin = torch.sin(alpha)
+    cos = torch.cos(alpha)
+    row1 = torch.cat([cos, sin], dim=-1)
+    row2 = torch.cat([-sin, cos], dim=-1)       # (B, N, 2)
+    rot_T = torch.stack([row1, row2], dim=-2)   # (B, N, 2, 2)
+    rotated = torch.bmm(corners.view([-1,4,2]), rot_T.view([-1,2,2]))
+    rotated = rotated.view([B,-1,4,2])          # (B*N, 4, 2) -> (B, N, 4, 2)
+    rotated[..., 0] += x
+    rotated[..., 1] += y
+    return rotated

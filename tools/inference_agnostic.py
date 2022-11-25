@@ -23,7 +23,7 @@ from snvc.dataset import KITTIRefinement_dataset as DR
 
 from snvc.utils.mis_utils import mem_info
 from snvc.utils.exp_utils import Experimenter
-from snvc.thirdparty.oriented_iou_loss import box2corners_th
+from snvc.utils.torch_utils import box2corners_th
 from snvc.models.vernier import get_model
 from snvc.models.loss3d import VoxelMSELoss, OccupancyLoss, OffsetLoss, CoordinateLoss
 from train_vernier import calculate_loss
@@ -345,7 +345,6 @@ def inference(nvs, dataset, loss_funcs, args, cfg, visualize=False):
                                          collate_fn=BatchCollator(cfg)
                                          )
     save_record = {}
-    residual = []
     filter_3d = Filter()
     
     for batch_idx, data_batch in enumerate(loader):
