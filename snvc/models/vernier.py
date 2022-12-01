@@ -5,20 +5,21 @@ by the main scale model.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+# import torch.nn.functional as F
 import numpy as np
 # plotting
 import matplotlib.pyplot as plt
 
 from torch.nn.functional import grid_sample, cosine_similarity
-from scipy.spatial.transform import Rotation
+# from scipy.spatial.transform import Rotation
 
 import snvc.models.hrnet as hrnet
 # import snvc.models.hrnetv2 as hrnetv2
 import snvc.visualization.points as vp
 
 from snvc.models.submodule import convbn_3d, convbn, hourglass, hourglass2d, hourglass_downsample_16, hourglass2d_downsample_16
-from snvc.utils.img_proc import get_affine_transform, kpts2cs, affine_transform
+# from snvc.utils.img_proc import get_affine_transform, kpts2cs, affine_transform
+from snvc.utils.img_proc import affine_transform
 from snvc.utils.transformation import compute_rigid_transform
 from snvc.models.FCmodel import get_fc_model
 

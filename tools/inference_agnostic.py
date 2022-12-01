@@ -26,11 +26,10 @@ from snvc.utils.exp_utils import Experimenter
 from snvc.utils.torch_utils import box2corners_th
 from snvc.models.vernier import get_model
 from snvc.models.loss3d import VoxelMSELoss, OccupancyLoss, OffsetLoss, CoordinateLoss
-from train_vernier import calculate_loss
 
 def get_parser():
     parser = argparse.ArgumentParser(description='model-agnostic refinement')
-    parser.add_argument('-cfg', '--cfg', '--config', default='../configs/config_car_refinement.py', help='config path')
+    parser.add_argument('-cfg', '--cfg', '--config', default=None)
     parser.add_argument('--data_path', default='../data/kitti/training/', help='data_path')
     parser.add_argument('--loadmodel', default=None, help='load model')
     parser.add_argument('--savemodel', default='./outputs/tempt/', help='save model')
@@ -60,14 +59,14 @@ def get_parser():
     if args.debugnum is None:
         args.debugnum = 10
     
-    exp = Experimenter(os.path.dirname(args.loadmodel), args.cfg)
-    cfg = exp.config
-    cfg.augment_times = 1
+    # exp = Experimenter(os.path.dirname(args.loadmodel))
+    # cfg = exp.config
+    # cfg.augment_times = 1
     if args.debug:
         args.btest = len(args.devices.split(','))
         args.workers = 0
         # args.workers = 4
-        cfg.debug = True
+        # cfg.debug = True
         args.tag += 'debug{}'.format(args.debugnum)
     
     if args.train:
@@ -109,6 +108,30 @@ def process_meta_data(meta_dict):
 def num_params(model):
     return sum([p.data.nelement() for p in model.parameters()])
 
+def calculate_loss(outputs, targets, loss_funcs, meta_data=None, weights=None):
+    losses = {}
+    total_loss = 0.
+    
+    losses['ncf'] = loss_funcs['ncf'](outputs, targets)
+    total_loss += losses['ncf']
+    
+    if 'occupancy' in loss_funcs:
+        # occupancy
+        losses['occupancy'] = loss_funcs['occupancy'](outputs, meta_data['occupancy'])
+        occup_weight = 1. if weights is None else weights.occupancy
+        total_loss += losses['occupancy'] * occup_weight
+        
+    if 'offset' in loss_funcs:
+        losses['offset'] = loss_funcs['offset'](outputs, meta_data)
+        total_loss += losses['offset']
+        
+    losses['coordinates'] = loss_funcs['coordinates'](outputs, meta_data)
+    coord_weight = 0.1 if weights is None else weights.coordinates
+    total_loss = total_loss + losses['coordinates'] * coord_weight
+    
+    losses['total_loss'] = total_loss
+    return losses
+
 def show_ncf(ncf, string=''):
     # optional prediction parametrized by coordinates and bbox 
     fig = plt.figure()
@@ -130,8 +153,6 @@ def show_ncf_2d(ncf, string='', coordinates=None, bbox=None):
     fig = plt.figure()
     num_cols = 3 if len(ncf) > 1 else 1
     num_rows = int(np.round(len(ncf) / num_cols))
-    if bbox is not None:
-        bbox_2d = bbox
     for part_id in range(len(ncf)): # for each part
         ax = plt.subplot(num_rows, num_cols, part_id + 1)
         ax.imshow(ncf[part_id])
@@ -400,13 +421,14 @@ def inference(nvs, dataset, loss_funcs, args, cfg, visualize=False):
 
 def main():
     args = get_parser()
+    assert args.loadmodel is not None and args.loadmodel.endswith('tar')
+    
     if args.debug:
         args.savemodel = './outputs/debug/'
         args.workers = 0
-        
-    exp = Experimenter(args.savemodel, cfg_path=args.cfg)
+    
+    exp = Experimenter(os.path.dirname(args.loadmodel))
     cfg = exp.config
-
     cfg.debug = args.debug
 
     # directory that saves the outputs 
@@ -415,7 +437,7 @@ def main():
 
     # initialize a model
     nvs = get_model(cfg, is_train=False)
-    assert args.loadmodel is not None and args.loadmodel.endswith('tar')
+    
     ckpt = torch.load(args.loadmodel)
     nvs.load_state_dict(ckpt['state_dict'], strict=True)
     print('Loaded {}'.format(args.loadmodel))    

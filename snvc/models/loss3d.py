@@ -8,8 +8,8 @@ from functools import partial
 from snvc.utils.torch_utils import compute_locations_bev
 # from snvc.layers.sigmoid_focal_loss import SigmoidFocalLoss
 # from snvc.layers.iou_loss import IOULoss
-from snvc.utils.bounding_box import compute_corners_sc
-from snvc.thirdparty.oriented_iou_loss import cal_diou, oriented_box_intersection_2d, enclosing_box
+#from snvc.utils.bounding_box import compute_corners_sc
+#from snvc.thirdparty.oriented_iou_loss import cal_diou, oriented_box_intersection_2d, enclosing_box
 
 INF = 100000000
 CFG_NAMES = ['CV_X_MIN', 'CV_Y_MIN', 'CV_Z_MIN', 
@@ -568,13 +568,6 @@ def compute_area_4pts(pts, method='cross-product'):
         area2 = torch.linalg.norm(torch.cross(edge3, edge4), dim=-1) 
         return (area1 + area2) * 0.5
         raise NotImplementedError
-    return
-
-def get_mask():
-    """
-    Returns whether a quatrilateral is valid or not.
-    """
-    
     return
 
 def compute_IoU_loss_corner(pred, gt):
