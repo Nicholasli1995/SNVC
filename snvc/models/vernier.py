@@ -715,16 +715,13 @@ class VernierScale(nn.Module):
             # offset in the object coordinate system
             offset = grid[flat_indices, :]
             offset[:,:,1] = 0.         
-        # if confidence[0,0] > 1:
-        #     # over confident
-        #     offset[0,0,:] = 0.
         ret = {'pred':{'one_part':[]
                        }, 
                'confidence':confidences,
                'keep_flags':keep_flags
                }             
         if num_parts > 1:
-            ret['pred']['five_part'] = []
+            ret['pred']['all_parts'] = []
         # prediction for each sample
         # a filter is used to decide whether to keep a refined
         # prediction or not.
@@ -733,7 +730,7 @@ class VernierScale(nn.Module):
                 ret['pred']['one_part'].append(sample.copy())
                 continue
             if not keep_flags[idx] and num_parts > 1:
-                ret['pred']['five_part'].append(sample.copy())
+                ret['pred']['all_parts'].append(sample.copy())
                 continue                
             # convert to the camera coordinate system
             basis = self._get_basis(sample)
@@ -743,7 +740,7 @@ class VernierScale(nn.Module):
             current_center[1] -= samples[idx, 0] * 0.5
             # part destination coordinates
             dst_part_coord = current_center[None,:] + offset[idx,:,:] #  
-            # just use predicted center to move the current prediction
+            # use only the predicted center to move the current prediction
             pred_one_part = samples[idx].copy()
             pred_one_part[3:6] = dst_part_coord[0,:]
             pred_one_part[4] += samples[idx][0] * 0.5
@@ -751,12 +748,12 @@ class VernierScale(nn.Module):
             if num_parts > 1:
                 # solve a 2D least square problem to find the updated position
                 src = (get_cam_cord(samples[idx]).T)[:, [0,2]]
-                pred_five_part = self.register_BEV(src.T, 
+                pred_all_parts = self.register_BEV(src.T, 
                                                    dst_part_coord[:, [0,2]].T, 
                                                    sample,
                                                    conf=confidences[idx]
                                                    )
-                ret['pred']['five_part'].append(pred_five_part)
+                ret['pred']['all_parts'].append(pred_all_parts)
         return ret
     
 def construct_box_3d(l, h, w):

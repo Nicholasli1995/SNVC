@@ -29,22 +29,33 @@ from snvc.models.loss3d import VoxelMSELoss, OccupancyLoss, OffsetLoss, Coordina
 
 def get_parser():
     parser = argparse.ArgumentParser(description='model-agnostic refinement')
+    # path to a specified configuration file
     parser.add_argument('-cfg', '--cfg', '--config', default=None)
+    # path to the KITTI dataset
     parser.add_argument('--data_path', default='../data/kitti/training/', help='data_path')
+    # path to the model checkpoint
     parser.add_argument('--loadmodel', default=None, help='load model')
-    parser.add_argument('--savemodel', default='./outputs/tempt/', help='save model')
+    # path to save the predictions
     parser.add_argument('--output_dir', default=None, help='path to the output directory')
-    parser.add_argument('--debug', action='store_true', default=False, help='debug mode')
-    parser.add_argument('--train', action='store_true', default=False, help='train split')
+    # switch to the debugging mode
+    parser.add_argument('--debug', action='store_true', default=False, help='debugging mode')
+    # use the training split for sanity check
+    parser.add_argument('--train_split', action='store_true', default=False, help='train split')
+    # specify the random seed value
     parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
+    # fix the random seed
     parser.add_argument('--fix_seed', default=False, help='reproduce experiments')
+    # specify the used Nvidia GPUs
     parser.add_argument('--devices', '-d', type=str, default=None)
+    # path to the data split file
     parser.add_argument('--split_file', default='../data/kitti/val.txt', help='split file')
+    # specify the number of workers used in data loading
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
     parser.add_argument('--btest', type=int, default=1)
+    # customized experiment tag
     parser.add_argument('--tag', '-t', type=str, default='')
-    parser.add_argument('--debugnum', default=None, type=int, help='debug mode')    
+    # parser.add_argument('--debugnum', default=1, type=int, help='debug mode')    
     args = parser.parse_args()
     
     if not args.devices:
@@ -55,21 +66,13 @@ def get_parser():
         gpus[0] = 0 if not gpus[0].isdigit() else int(gpus[0])
         gpus[1] = len(mem_info()) if not gpus[1].isdigit() else int(gpus[1]) + 1
         args.devices = ','.join(map(lambda x: str(x), list(range(*gpus))))
-    
-    if args.debugnum is None:
-        args.debugnum = 10
-    
-    # exp = Experimenter(os.path.dirname(args.loadmodel))
-    # cfg = exp.config
-    # cfg.augment_times = 1
+
     if args.debug:
         args.btest = len(args.devices.split(','))
         args.workers = 0
-        # args.workers = 4
-        # cfg.debug = True
         args.tag += 'debug{}'.format(args.debugnum)
     
-    if args.train:
+    if args.train_split:
         # inference with the training split
         args.split_file = '../data/kitti/train.txt'
         args.tag += '_train'
@@ -273,17 +276,18 @@ def update_record(record, updates, meta_data):
         img_path = paths[idx]
         save_name = img_path.split(os.sep)[-1][:-4] + ".txt"
         if save_name not in record:
-            record[save_name] = {'one_part':[], 'five_part':[]}
-        record[save_name]['one_part'].append(get_instance_str(updates, 
-                                                             meta_data, 
-                                                             idx, 
-                                                             'one_part')
-                                            )
-        if 'five_part' in updates['pred']:
-            record[save_name]['five_part'].append(get_instance_str(updates, 
+            # record[save_name] = {'one_part':[], 'all_parts':[]}
+            record[save_name] = {'all_parts':[]}
+        # record[save_name]['one_part'].append(get_instance_str(updates, 
+        #                                                      meta_data, 
+        #                                                      idx, 
+        #                                                      'one_part')
+        #                                     )
+        if 'all_parts' in updates['pred']:
+            record[save_name]['all_parts'].append(get_instance_str(updates, 
                                                                  meta_data, 
                                                                  idx, 
-                                                                 'five_part')
+                                                                 'all_parts')
                                                 )
     return
 
@@ -294,7 +298,7 @@ def write_txt(pred, save_path):
                 f.write(line + '\n')
             else:
                 f.write(line)
-    # print('Wrote prediction file at {:s}'.format(save_path))
+    print('Wrote prediction file at {:s}'.format(save_path))
     return
 
 def generate_empty_file(output_dir, calib_dir):
@@ -414,7 +418,7 @@ def inference(nvs, dataset, loss_funcs, args, cfg, visualize=False):
                               cfg=cfg
                               )
         del left_rois, right_rois, targets, meta_data
-        # break
+
     if cfg.save and not cfg.debug:
         generate_output(save_record, cfg, args)
     return
