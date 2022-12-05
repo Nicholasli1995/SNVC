@@ -112,8 +112,6 @@ def get_img_paths(root,
     right_fold = 'image_3/'
     if depth_disp:
         disp_L = cfg.depth_folder
-    else:
-        disp_L = cfg.disparity_folder
 
     with open(split_file, 'r') as f:
         all_idx = [x.strip() for x in f.readlines()]

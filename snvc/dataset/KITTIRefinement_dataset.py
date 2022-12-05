@@ -59,11 +59,9 @@ class refinementDataset(data.Dataset):
     def __init__(self, 
                  left, 
                  right, 
-                 left_disparity, 
                  training, 
                  loader=default_loader, 
                  dploader=disparity_loader,
-                 # mloader=mask_loader,
                  split=None, 
                  cfg=None, 
                  generate_target=False
@@ -71,10 +69,8 @@ class refinementDataset(data.Dataset):
         self.left = left
         self.right = right
         self.split = split
-        self.disp_L = left_disparity
         self.loader = loader
         self.dploader = dploader
-        # self.mloader = mloader
         self.training = training
         self.cfg = cfg
         # initialize relevant parameters

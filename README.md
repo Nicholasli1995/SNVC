@@ -28,13 +28,13 @@ Refer to DEMO_REFINE.md for a script demonstrating how the instance-level modeli
 </p>
 
 ## Data preparation
-Refer to DATASET.md to download and prepare the KITTI dataset used in this project.
+Refer to [DATASET.md](https://github.com/Nicholasli1995/SNVC/blob/main/docs/DATASET.md) to download and prepare the KITTI dataset used in this project.
 
 ## Training 
 Refer to TRAIN.md to train the models by yourself.
 
 ## Inference
-Refer to INFERENCE.md to use pre-trained weights and re-produce the quantitative results.
+Refer to [INFERENCE.md](https://github.com/Nicholasli1995/SNVC/blob/main/docs/INFERENCE.md) to use pre-trained weights and re-produce the quantitative results.
 
 ## TraceBox: a simple 3D bounding box visualization tool
 This is a simple self-contained python script for visualizing a set of 3D cuboids. It considers occlusion and uses simple ray tracing to obtain the visibility of cuboid vertices (note the dashed lines). You can easily use this script in 3D object detection and 6DoF pose estimation projects.
@@ -68,4 +68,3 @@ Please star this repository and cite the following paper in your publications if
 
 ## Acknowledgement
 Certain modules were adapted from [DSGN](https://github.com/dvlab-research/DSGN) and [LIGA-Stereo](https://github.com/xy-guo/LIGA-Stereo). Thank the authors for their contributions.
-

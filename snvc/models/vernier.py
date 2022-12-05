@@ -28,10 +28,6 @@ class VernierScale(nn.Module):
         super(VernierScale, self).__init__()
         self.cfg = cfg
         self.is_train = is_train
-        # predict 2D evidence from 2D features
-        self.use_2d = cfg.use_2d
-        # construct cost volume and perform depth estimation
-        self.estimate_depth = cfg.estimate_depth
         self._init_3d_net()
         self._init_grid()
         if self.cfg.vernier_type in ['BEV_type3']:
@@ -355,23 +351,13 @@ class VernierScale(nn.Module):
     def construct_voxel(self, left, right, grid_proj_left, grid_proj_right):
         """
         Construct a voxel representation based on left/right roi features.
-        """        
-        if self.estimate_depth:
-            # build intermediate depth representation
-            cv = self.build_cost_volume(left, right)
-            # sample the cost volume feature to form a voxel representation
-            voxel = None
-            # depth prediction
-            depth = None
-        else:
-            # directly build voxel without intermediate depth estimation
-            depth = None        
-            voxels = self._sample_2d_feat(left, 
-                                          right, 
-                                          grid_proj_left, 
-                                          grid_proj_right
-                                          )
-        return voxels, depth
+        """              
+        voxels = self._sample_2d_feat(left, 
+                                      right, 
+                                      grid_proj_left, 
+                                      grid_proj_right
+                                      )
+        return voxels
     
     def predict_3d_heatmaps(self, voxel, depth=None):
         """
@@ -484,13 +470,11 @@ class VernierScale(nn.Module):
         """        
         left_feat = self.feat_net(left_roi)
         right_feat = self.feat_net(right_roi)
-        if self.use_2d:
-            raise NotImplementedError
-        voxels, depths = self.construct_voxel(left_feat, 
-                                              right_feat, 
-                                              grid_proj_left,
-                                              grid_proj_right
-                                              )
+        voxels = self.construct_voxel(left_feat, 
+                                      right_feat, 
+                                      grid_proj_left,
+                                      grid_proj_right
+                                      )
         # a test of the feature aggregation process
         if test:
             idx = 0
@@ -533,7 +517,7 @@ class VernierScale(nn.Module):
                                self.cfg,
                                idx=0
                                )            
-        ncf, occupancy, part_offsets, coordinates, bboxes = self.predict_3d_heatmaps(voxels, depths)
+        ncf, occupancy, part_offsets, coordinates, bboxes = self.predict_3d_heatmaps(voxels)
         if test:
             # plot occupancy
             plt.figure()
@@ -564,12 +548,9 @@ class VernierScale(nn.Module):
                            np.floor((z + nz*spa[2])/spa[2])  # l direction
                            )
                 ax.plot(indices[2], indices[1], 'ro')
-        outputs = {#'depth':depths, 
-                   'ncf':ncf,
+        outputs = {'ncf':ncf,
                    'occupancy':occupancy,
-                   # 'offset':part_offsets,
                    'coordinates':coordinates,
-                   # 'bbox':bboxes
                    }
         return outputs
     

@@ -1,6 +1,8 @@
 """
 Implementation of the model-agnostic inference of a Vernier scale network. 
 It corresponds to the V-A in the paper.
+
+If you want to visualize a few batches of the predictions, set the debug argument.
 """
 
 import sys
@@ -37,6 +39,8 @@ def get_parser():
     parser.add_argument('--loadmodel', default=None, help='load model')
     # path to save the predictions
     parser.add_argument('--output_dir', default=None, help='path to the output directory')
+    # path to the input proposals
+    parser.add_argument('--pred_dir', default=None, help='path to the input directory')
     # switch to the debugging mode
     parser.add_argument('--debug', action='store_true', default=False, help='debugging mode')
     # use the training split for sanity check
@@ -55,7 +59,8 @@ def get_parser():
     parser.add_argument('--btest', type=int, default=1)
     # customized experiment tag
     parser.add_argument('--tag', '-t', type=str, default='')
-    # parser.add_argument('--debugnum', default=1, type=int, help='debug mode')    
+    # number of batches to visualize in the debugging mode
+    parser.add_argument('--vis_num', default=1, type=int, help='number of batches to visualize')    
     args = parser.parse_args()
     
     if not args.devices:
@@ -70,7 +75,6 @@ def get_parser():
     if args.debug:
         args.btest = len(args.devices.split(','))
         args.workers = 0
-        args.tag += 'debug{}'.format(args.debugnum)
     
     if args.train_split:
         # inference with the training split
@@ -154,6 +158,7 @@ def normalize(inp):
 
 def show_ncf_2d(ncf, string='', coordinates=None, bbox=None):
     fig = plt.figure()
+    fig.suptitle('Red cross: predicted part coordinates')
     num_cols = 3 if len(ncf) > 1 else 1
     num_rows = int(np.round(len(ncf) / num_cols))
     for part_id in range(len(ncf)): # for each part
@@ -183,6 +188,7 @@ def show_update(samples, pred_dict, dataset, gts=None, img_paths=None):
     num_styles = len(pred_dict)
     for ins_idx, sample in enumerate(samples):
         fig = plt.figure()
+        fig.suptitle('Red: proposals; Yellow: 3D RoI; Black: ground truth; Magenta: predictions')
         if gts[0] is not None:
             gt = gts[ins_idx]
             gt_kpts_3d = dataset._get_cam_cord(gt).T       
@@ -234,7 +240,6 @@ def visualize_outputs(outputs,
         show_ncf(ncf_gt, 'gt')
     elif output_type in ['BEV', 'BEV_type2', 'BEV_type3']:
         ncf = outputs['ncf'][0].data.cpu().numpy()
-        # show_ncf_2d(ncf, 'pred')
         if 'coordinates' in outputs:
             coordinates_pred = outputs['coordinates'][0].data.cpu().numpy()
             coordinates_pred[:,0] *= cfg.grid_resolution[1]
@@ -418,6 +423,9 @@ def inference(nvs, dataset, loss_funcs, args, cfg, visualize=False):
                               cfg=cfg
                               )
         del left_rois, right_rois, targets, meta_data
+        
+        if visualize and batch_idx + 1 >= args.vis_num:
+            break
 
     if cfg.save and not cfg.debug:
         generate_output(save_record, cfg, args)
@@ -434,10 +442,9 @@ def main():
     exp = Experimenter(os.path.dirname(args.loadmodel))
     cfg = exp.config
     cfg.debug = args.debug
-
-    # directory that saves the outputs 
-    if args.output_dir is not None:
-        cfg.output_dir = args.output_dir
+    # directory that stores the input proposals in KITTI format
+    cfg.pred_dir = args.pred_dir
+    cfg.output_dir = args.output_dir
 
     # initialize a model
     nvs = get_model(cfg, is_train=False)
@@ -448,23 +455,20 @@ def main():
     print('Number of model parameters: {}'.format(num_params(nvs)))
 
     # initializa dataset
-    is_train = False if "test" in args.split_file else True
-    all_left_img, all_right_img, all_left_disp, = ls.get_img_paths(args.data_path,
-                                                                   args.split_file,
-                                                                   depth_disp=True,
-                                                                   cfg=cfg,
-                                                                   is_train=is_train # used to load 3D box
-                                                                   ) # get the list of paths for the training files
+    is_train = False if "test" in args.split_file else True # the val split images are in the training folder
+    all_left_img, all_right_img, _ = ls.get_img_paths(args.data_path,
+                                                      args.split_file,
+                                                      depth_disp=True,
+                                                      cfg=cfg,
+                                                      is_train=is_train # used to load 3D box
+                                                      )
 
     dataset = DR.refinementDataset(all_left_img, 
                                    all_right_img, 
-                                   all_left_disp, 
                                    False, 
                                    split=args.split_file, 
                                    cfg=cfg
                                    ) 
-    # return
-    # multi-gpu with DataParallel
     nvs.eval()
     nvs = torch.nn.DataParallel(nvs).cuda()
     loss_funcs = {'ncf':VoxelMSELoss(),
