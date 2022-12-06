@@ -38,7 +38,7 @@ def get_parser():
     # path to the model checkpoint
     parser.add_argument('--loadmodel', default=None, help='load model')
     # path to save the predictions
-    parser.add_argument('--output_dir', default=None, help='path to the output directory')
+    parser.add_argument('--output_dir', default='../outputs', help='path to the output directory')
     # path to the input proposals
     parser.add_argument('--pred_dir', default=None, help='path to the input directory')
     # switch to the debugging mode
@@ -391,7 +391,7 @@ def inference(nvs, dataset, loss_funcs, args, cfg, visualize=False):
                       meta_data['grid_proj_left'],
                       meta_data['grid_proj_right'],
                       meta_data,
-                      test=False
+                      test=cfg.debug
                       )
         coordinates_pred = outputs['coordinates'].data.cpu().numpy() if 'coordinates' in outputs else None
         outputs['update'] = nvs.module.ncf_to_update_2d(outputs['ncf'],
@@ -436,7 +436,6 @@ def main():
     assert args.loadmodel is not None and args.loadmodel.endswith('tar')
     
     if args.debug:
-        args.savemodel = './outputs/debug/'
         args.workers = 0
     
     exp = Experimenter(os.path.dirname(args.loadmodel))

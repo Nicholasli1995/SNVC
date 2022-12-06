@@ -2,6 +2,8 @@
 Before you start, please follow the instructions to prepare the dataset as described [here](https://github.com/Nicholasli1995/SNVC/blob/master/docs/DATASET.md). 
 
 ## Model-agnostic inference
+If you have done this step in the refinement demo, skip this step.
+ 
 Download the model checkpoint and coarse proposals [here](https://drive.google.com/file/d/18fL0DAuq7L4Xe-k-gytYIo-nRQEXSjKI/view?usp=share_link). The files in the zipped file have the following structure. ${V-A} denotes the unzipped file directory.
 
    ```

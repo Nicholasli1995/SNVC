@@ -1,6 +1,6 @@
 # SNVC
 
-Official project website for the AAAI 2022 paper "Stereo Neural Vernier Caliper". 
+Official project website for the AAAI 2022 paper "[Stereo Neural Vernier Caliper](https://ojs.aaai.org/index.php/AAAI/article/view/20026/19785)". 
 
 **[Note]: This repository is under final testing. This note will be removed once the testing is finished. The files may be updated before the removal.**
 
