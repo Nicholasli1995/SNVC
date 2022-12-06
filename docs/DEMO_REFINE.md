@@ -18,5 +18,19 @@
  python inference_agnostic.py --loadmodel ${V-A}/epoch_80.tar --pred_dir ${V-A}/IDA-3D --devices "0" --debug
 ```
 
-This command loads a IDA-3D prediction, refines its pose and visualize the process. You should be able to see figures like below:
+This command loads a IDA-3D prediction, refines its pose and visualize the process. You should be able to see figures like below and interact with your mouse.
 
+<p align="center">
+  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/demo_refine1.png" height="300"/>
+</p>
+In this figure, the 2D plots shows the left/right inputs and the projected region-of-interest (Red). The 3D plot shows the current proposal (Red), the region-of-interest (yellow) and the down-sampled voxels (blue).
+
+<p align="center">
+  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/demo_refine2.png" height="600"/>
+</p>
+This 2D figure shows the confidence maps for each object part and the predicted coordinates for part update.
+
+<p align="center">
+  <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/demo_refine3.png" height="300"/>
+</p>
+This 3D figure shows the input proposal (red), the region-of-interest (yellow), the ground truth (black) and the prediction of SNVC (magenta). Note the refined center is closer to the ground truth center than the input one.

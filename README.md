@@ -22,7 +22,7 @@ Refer to DEMO_DET.md to see how to perform frame-by-frame S3DOD with an examplar
 Refer to DEMO_TBD.md for an examplar tracking-by-detection script. Given an initial 3D cuboid prediction, SNVC is capable of constructing a high-resolution local 3D region-of-interest and searches for the next position of the object.
 
 ## Demo: Model-agnostic instance-level refinement
-Refer to DEMO_REFINE.md for a script demonstrating how the instance-level modeling capability in this repo can be used with other detectors. The instance-level model of SNVC can refine the predictions of different 3D object detectors in a model-agnostic manner. This means you can use **any** real-time 3D object detector to produce coarse proposals and refine them only when necessary.
+Refer to [DEMO_REFINE.md](https://github.com/Nicholasli1995/SNVC/blob/main/docs/DEMO_REFINE.md) for a script demonstrating how the instance-level modeling capability in this repo can be used with other detectors. The instance-level model of SNVC can refine the predictions of different 3D object detectors in a model-agnostic manner. This means you can use **any** real-time 3D object detector to produce coarse proposals and refine them only when necessary.
 <p align="center">
 <img src="https://github.com/Nicholasli1995/SNVC/blob/main/imgs/diagram.png" height="210"/>
 </p>
