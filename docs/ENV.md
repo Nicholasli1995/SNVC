@@ -21,7 +21,7 @@ Another tested computing node with NVIDIA RTX 3090 GPUs (8*24 GB, driver 470.86)
 - OpenCV (3.4.2)
 - CUDA (11.4)
 
-For more details of the tested PC environment, you can refer to this spec-list.txt. 
+For more details of the environment, you can refer to the spec-file.txt. 
 
 The recommended environment manager is [Anaconda](https://www.anaconda.com/), which can create an environment using this provided spec-list. For debugging using an IDE, the recommended IDE is Spyder which you can get by
 ```bash
@@ -29,10 +29,12 @@ conda install spyder
 ```
 
 ## Compile and install
-You need to compile and install the following modules:
-Updating
+Compile and install the extension modules at your project directory ${SNVC_DIR} with:
+```bash
+python setup.py develop 
+```
 
-## Compile the KITTI evaluator (optional)
+## Compile the KITTI evaluator (recommended)
 If you need to quantitatively evaluate the model predictions for KITTI, you need to compile this evaluation tool.
 ```bash
 cd ${SNVC_DIR}/tools/kitti-eval 

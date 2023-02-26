@@ -1,7 +1,7 @@
 import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
-from liga.ops.build_cost_volume import build_cost_volume_cuda
+from snvc.extension.build_cost_volume import build_cost_volume_cuda
 
 
 class _BuildCostVolume(Function):

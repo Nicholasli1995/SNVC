@@ -1,67 +1,80 @@
-import glob
 import os
-
+import subprocess
 import torch
+
+from os.path import join as osp
 from setuptools import find_packages
 from setuptools import setup
-from torch.utils.cpp_extension import CUDA_HOME
-from torch.utils.cpp_extension import CppExtension
 from torch.utils.cpp_extension import CUDAExtension
 
 
+def get_git_commit_number():
+    if not os.path.exists('.git'):
+        return '0000000'
+
+    cmd_out = subprocess.run(
+        ['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
+    git_commit_number = cmd_out.stdout.decode('utf-8')[:7]
+    return git_commit_number
+
+def write_version_to_file(version, target_file):
+    with open(target_file, 'w') as f:
+        print('__version__ = "{:s}"'.format(version), file=f)
+        
 def get_extensions():
     this_dir = os.path.dirname(os.path.abspath(__file__))
-    extensions_dir = os.path.join(this_dir, "snvc", "extension")
-
-    main_file = glob.glob(os.path.join(extensions_dir, "*.cpp"))
-    source_cpu = glob.glob(os.path.join(extensions_dir, "cpu", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "cuda", "*.cu"))
-
-    sources = main_file + source_cpu
-    extension = CppExtension
-
-    extra_compile_args = {"cxx": []}
-    define_macros = []
-
-    if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
-        extension = CUDAExtension
-        sources += source_cuda
-        define_macros += [("WITH_CUDA", None)]
-        extra_compile_args["nvcc"] = [
-            "-DCUDA_HAS_FP16=1",
-            "-D__CUDA_NO_HALF_OPERATORS__",
-            "-D__CUDA_NO_HALF_CONVERSIONS__",
-            "-D__CUDA_NO_HALF2_OPERATORS__",
-        ]
-
-    sources = [os.path.join(extensions_dir, s) for s in sources]
-
-    include_dirs = [extensions_dir]
-
-    ext_modules = [
-        extension(
-            "snvc.ops",
-            sources,
-            include_dirs=include_dirs,
-            define_macros=define_macros,
-            extra_compile_args=extra_compile_args,
-        )      
+    extensions_dir = osp(this_dir, "snvc", "extension")
+    osp(extensions_dir, 'iou3d_nms', 'src', 'iou3d_cpu.cpp')
+    ext_modules=[
+        CUDAExtension(
+            name='snvc.extension.iou3d_nms.iou3d_nms_cuda',
+            sources=[
+                osp(extensions_dir, 'iou3d_nms', 'src', 'iou3d_cpu.cpp'),
+                osp(extensions_dir, 'iou3d_nms', 'src', 'iou3d_nms_api.cpp'),
+                osp(extensions_dir, 'iou3d_nms', 'src', 'iou3d_nms.cpp'),
+                osp(extensions_dir, 'iou3d_nms', 'src', 'iou3d_nms_kernel.cu')
+            ],         
+        ),
+        CUDAExtension(
+            name='snvc.extension.build_cost_volume.build_cost_volume_cuda',
+            sources=[
+                osp(extensions_dir, 'build_cost_volume', 'src', 'BuildCostVolume.cpp'),
+                osp(extensions_dir, 'build_cost_volume', 'src', 'BuildCostVolume_cuda.cu')
+            ],
+            define_macros=[("WITH_CUDA", None)]
+        ),
+        CUDAExtension(
+            name='snvc.extension.roiaware_pool3d.roiaware_pool3d_cuda',
+            sources=[
+                osp(extensions_dir, 'roiaware_pool3d', 'src', 'roiaware_pool3d.cpp'),
+                osp(extensions_dir, 'roiaware_pool3d', 'src', 'roiaware_pool3d_kernel.cu'),                
+            ]
+        ),
     ]
-
+        
     return ext_modules
 
 if __name__ == '__main__':
+    version = '0.9.0+{:s}'.format(get_git_commit_number())
+    write_version_to_file(version, 'snvc/version.py')
     setup(
         name="snvc",
-        version="0.8",
+        version=version,
         author="Shichao Li",
+        author_email="nicholas.li@connect.ust.hk",
+        license="MIT License",        
         url="https://github.com/Nicholasli1995/SNVC",
         description="A python implementation of Stereo Neural Vernier Caliper.",
         install_requires=[
             'numpy',
             'torch',
+            'numba',
         ],        
-        packages=find_packages(exclude=("configs", "tools", "preprocessing")),
-        ext_modules=get_extensions(),
+        packages=find_packages(exclude=("configs", 
+                                        "tools", 
+                                        "data", 
+                                        "docs", 
+                                        "imgs")),
         cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
+        ext_modules=get_extensions()        
     )
